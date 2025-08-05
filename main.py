@@ -27,7 +27,7 @@ except ImportError:
 
 #------------------------------------------------------------------------------
 
-task_file = 'ToDo-tasks.json'
+task_file = './ToDo-tasks.json'
 
 #------------------------------------------------------------------------------
 
@@ -40,6 +40,8 @@ def load_tasks() -> list:
   if os.path.exists(task_file):
     with open(task_file, 'r') as f:
       return json.load(f)
+    
+  else:
     return []
   
 #------------------------------------------------------------------------------
