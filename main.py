@@ -1,8 +1,19 @@
+from datetime import datetime
+from tabulate import tabulate
 import random
 import json
 import time
 import csv
 import os
+import re
+
+with open('todo-tasks.json', 'r') as f:
+    todo_list = json.load(f)
+
+# Function to colorize rows
+def colorize(task): 
+  ...
+
 #-------------------------------------------------------------------------------
 
 def clear_screen():
@@ -27,6 +38,7 @@ except ImportError:
 
 #------------------------------------------------------------------------------
 
+re_pattern = r'^\d{2}\.\d{2}\.\d{4}$'
 task_file = './ToDo-tasks.json'
 
 #------------------------------------------------------------------------------
@@ -39,39 +51,58 @@ def load_tasks() -> list:
   
   if os.path.exists(task_file):
     with open(task_file, 'r') as f:
-      return json.load(f)
-    
+      loaded_tasks = json.load(f)
+      return loaded_tasks
+  
   else:
     return []
   
 #------------------------------------------------------------------------------
-
 def view_tasks(tasks) -> None:
   '''
-  Displays the list of tasks form the tasks list.
-  Each task is shown with its own title and status complete/incomplete.
+  Displays the list of tasks in a colored table with serial numbers.
+  Tasks are color-coded based on completion and priority.
   '''
   clear_screen()
-  
+
   if not tasks:
-    print('No tasks found.')
+    print(Fore.YELLOW + 'No tasks found.')
     return
-      
-  print(Fore.RESET + Style.BRIGHT +'Here\'s the list of your tasks:\n')
-    
+
+  print(Fore.CYAN + Style.BRIGHT + "Here's the list of your tasks:\n")
+
+  table_data = []
   for i, task in enumerate(tasks, start=1):
-    
-    
-    if task['done']:
-      status = '✅'
-      print(Fore.GREEN + f'{i}. {task['title']} [{status}]')
-      
+
+    status_text = "Completed" if task.get("done") else "Pending"
+    status_color = Fore.GREEN if task.get("done") else Fore.RED
+
+    priority = task.get("priority", "Low").lower()
+    title = task.get("title", "")
+
+    if priority == "high":
+      title_colored = Fore.RED + title
+    elif priority == "medium":
+      title_colored = Fore.YELLOW + title
+    elif priority == "low":
+      title_colored = Fore.BLUE + title
     else:
-      status = '❌'
-      print(Fore.RED + f'{i}. {task['title']} [{status}]')
-      
+      title_colored = Fore.WHITE + title
+
+    due = task.get("due") if task.get("due") else "-"
+
+    table_data.append([
+      i,
+      title_colored,
+      status_color + status_text,
+      due,
+      task.get("priority", "Low")
+    ])
+
+  headers = ["Sr. No", "Task", "Status", "Due Date", "Priority"]
+  print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
   print(Style.RESET_ALL)
-    
+        
 #------------------------------------------------------------------------------
 
 def save_tasks(tasks) -> None:
@@ -93,7 +124,27 @@ def add_task(tasks) -> None:
   clear_screen()
   
   title = input(Fore.LIGHTWHITE_EX + 'Enter task you wanna add: ')
-  tasks.append({'title': title, 'done': False})
+  due_date = input(Fore.LIGHTWHITE_EX + '(OPTIONAL) Enter task due date (DD.MM.YYYY) or enter number of days to add to current date: ')
+  priority = input(Fore.LIGHTWHITE_EX + '(OPTIONAL) Enter task priority - low[l], medium[m], high[h] (default = low): ').lower()   
+      
+  if not re.match(re_pattern, due_date):
+    
+    if due_date.isdigit():
+      due_date = datetime.now().date().split('-')[2].int() + int(due_date)
+      
+    else:
+      due_date = None
+    
+  if priority == 'm':
+    priority = 'Medium' 
+    
+  elif priority == 'h':
+    priority = 'High' 
+    
+  else: 
+    priority = 'Low'
+    
+  tasks.append({'title': title, 'done': False, 'due': due_date, 'priority': priority})
   save_tasks(tasks)
   print(Fore.YELLOW + 'Task added.')
   
@@ -134,9 +185,13 @@ def delete_task(tasks):
     index = int(input('Enter task number to delete: ')) - 1
     
     if 0 <= index < len(tasks):
-      removed = tasks.pop(index)
-      save_tasks(tasks)
-      print(f'Deleted task: {removed['title']}')
+      sure = input(f'Are you sure you want to delete task {index + 1} \'{tasks[index]['title']}\'? (y/n): ').lower()
+      if sure == 'y':
+        remove = tasks.pop(index)
+        save_tasks(tasks)
+        print(f'Deleted task: {remove['title']}')
+      else:
+        print('Task deletion cancelled.')
       
     else:
       print('Invalid task number.')
@@ -155,24 +210,24 @@ def export_tasks(tasks):
   choice = input('Export to CSV (c) or JSON (j)? ').lower()
   
   if choice == 'j':
-    filename = input("Enter tasks filename (default = tasks.json): ").replace(' ', '_')
+    filename = input('Enter tasks filename (default = tasks.json): ').replace(' ', '_')
     
     if filename.strip() == '':
       filename = 'tasks.json'
       
-    with open(filename, "w") as f:
+    with open(filename+'.json', 'w') as f:
       json.dump(tasks, f, indent=4)
       
     print(Fore.GREEN + f'Tasks exported to {filename}')
     time.sleep(1)
     
   elif choice == 'c':   
-    filename = input("Enter tasks filename (default = tasks.csv): ").replace(' ', '_')
+    filename = input('Enter tasks filename (default = tasks.csv): ').replace(' ', '_')
     
     if filename.strip() == '':
       filename = 'tasks.csv'
       
-    with open(filename, "w", newline='') as f:
+    with open(filename+'.csv', 'w', newline='') as f:
       writer = csv.writer(f)
       writer.writerow(['Title', 'Done'])
       
@@ -199,6 +254,7 @@ def main() -> None:
   while True:
     
     clear_screen()
+    colorize(tasks)
     print(Style.RESET_ALL + '''  
 --- To-Do App Modes ---
 

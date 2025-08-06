@@ -1,6 +1,50 @@
 [
     {
-        "title": "Join hack club",
-        "done": true
+        "title": "Take out the trash",
+        "done": true,
+        "due": "05.08.2025",
+        "priority": "Low"
+    },
+    {
+        "title": "Fix the leaky faucet",
+        "done": false,
+        "due": null,
+        "priority": "High"
+    },
+    {
+        "title": "Study for math test",
+        "done": false,
+        "due": "08.08.2025",
+        "priority": "High"
+    },
+    {
+        "title": "Go for a run",
+        "done": false,
+        "due": "06.08.2025",
+        "priority": "Medium"
+    },
+    {
+        "title": "Organize desk",
+        "done": true,
+        "due": null,
+        "priority": "Low"
+    },
+    {
+        "title": "Plan weekend trip",
+        "done": false,
+        "due": "10.08.2025",
+        "priority": "Medium"
+    },
+    {
+        "title": "Call grandma",
+        "done": false,
+        "due": null,
+        "priority": "High"
+    },
+    {
+        "title": "Refill water bottle",
+        "done": true,
+        "due": null,
+        "priority": "Low"
     }
 ]
