@@ -1,0 +1,4 @@
+tabulate
+plyer
+colorama
+tqdm

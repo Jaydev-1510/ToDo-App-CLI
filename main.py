@@ -1,5 +1,4 @@
 from datetime import datetime
-from tabulate import tabulate
 import random
 import json
 import time
@@ -9,10 +8,6 @@ import re
 
 with open('todo-tasks.json', 'r') as f:
     todo_list = json.load(f)
-
-# Function to colorize rows
-def colorize(task): 
-  ...
 
 #-------------------------------------------------------------------------------
 
@@ -27,14 +22,15 @@ def clear_screen():
 #------------------------------------------------------------------------------
 
 try:
-  
+  from tabulate import tabulate
+  from plyer import notification 
   from colorama import Fore, Style
   from tqdm import tqdm
   import pyfiglet
   ascii_banner = pyfiglet.figlet_format('ToDo App')
   
 except ImportError:
-  acci_banner = 'Welcome to the ToDo App'
+  print(Fore.RED + 'Required modules are not installed. Please open the setup.py file and run it to install the required modules.')
 
 #------------------------------------------------------------------------------
 
@@ -113,6 +109,13 @@ def save_tasks(tasks) -> None:
   with open(task_file, 'w') as file:
     json.dump(tasks, file, indent=4)
   
+    notification.notify(
+        title ='Tasks saved!',
+        message ='Your tasks have been saved successfully.',
+        app_name ='ToDo App',
+        timeout = 5
+    )
+  
 #------------------------------------------------------------------------------
 
 def add_task(tasks) -> None:
@@ -144,7 +147,7 @@ def add_task(tasks) -> None:
   else: 
     priority = 'Low'
     
-  tasks.append({'title': title, 'done': False, 'due': due_date, 'priority': priority})
+  tasks.append({'title': title, 'done': False, 'due date': due_date, 'priority': priority})
   save_tasks(tasks)
   print(Fore.YELLOW + 'Task added.')
   
@@ -202,6 +205,10 @@ def delete_task(tasks):
 #------------------------------------------------------------------------------
 
 def export_tasks(tasks):
+  '''
+  Exports tasks to a specified file format (CSV or JSON).
+  Asks the user for the file format and filename.
+  '''
   
   if not tasks:
     print('No tasks to export.')
@@ -213,7 +220,7 @@ def export_tasks(tasks):
     filename = input('Enter tasks filename (default = tasks.json): ').replace(' ', '_')
     
     if filename.strip() == '':
-      filename = 'tasks.json'
+      filename = 'tasks'
       
     with open(filename+'.json', 'w') as f:
       json.dump(tasks, f, indent=4)
@@ -225,17 +232,72 @@ def export_tasks(tasks):
     filename = input('Enter tasks filename (default = tasks.csv): ').replace(' ', '_')
     
     if filename.strip() == '':
-      filename = 'tasks.csv'
+      filename = 'tasks'
       
     with open(filename+'.csv', 'w', newline='') as f:
       writer = csv.writer(f)
-      writer.writerow(['Title', 'Done'])
+      writer.writerow(['Title', 'Done', 'Due Date', 'Priority'])
       
       for task in tasks:
-        writer.writerow([task['title'], task['done']])
+        writer.writerow([task['title'], task['done'], task['due date'], task['priority']])
       
     print(Fore.GREEN + f'Tasks exported to {filename}')
     time.sleep(1)
+
+#------------------------------------------------------------------------------
+
+def import_tasks(path):
+  '''
+  Imports tasks from a specified file (CSV or JSON).
+  '''
+  
+  if not os.path.exists(path):
+    print(Fore.RED + 'File does not exist.')
+    return
+  
+  if path.endswith('.json'):
+    
+    sure = input(Fore.YELLOW + 'Are you sure you want to import tasks from this file? (y/n): ').lower()
+    
+    if sure != 'y':
+      print(Fore.RED + 'Import cancelled.')
+      return
+    
+    try:
+      with open(path, 'r') as f:
+        path_tasks = json.load(f)
+
+      save_tasks(path_tasks)
+      print(Fore.GREEN + 'Tasks imported successfully.')
+      time.sleep(1)
+        
+    except json.JSONDecodeError:
+      print(Fore.RED + 'Invalid JSON file.')
+      return
+    
+      
+    
+  elif path.endswith('.csv'):
+    
+    sure = input(Fore.YELLOW + 'Are you sure you want to import tasks from this file? (y/n): ').lower()
+    
+    if sure != 'y':
+      print(Fore.RED + 'Import cancelled.')
+      return
+    
+    with open(path, 'r') as f:
+      reader = csv.DictReader(f)
+      
+      csv_tasks = []
+      
+      for row in reader:
+        csv_tasks.append({'title': row['Title'], 'done': row['Done'].lower() == 'true', 'due date': row['Due Date'], 'priority': row['Priority']})
+        
+      save_tasks(csv_tasks)
+  else:
+    print(Fore.RED + 'Unsupported file format. Please use CSV or JSON.')
+    return
+  
     
 #------------------------------------------------------------------------------
 
@@ -249,12 +311,11 @@ def main() -> None:
     for i in tqdm(range(100)):
       time.sleep(random.uniform(0.001, 0.01))
   except:
-    print(acci_banner)
+    print(ascii_banner)
     
   while True:
     
     clear_screen()
-    colorize(tasks)
     print(Style.RESET_ALL + '''  
 --- To-Do App Modes ---
 
@@ -263,6 +324,7 @@ def main() -> None:
 3. Complete Task
 4. Delete Task
 5. Export Tasks
+6. Import Tasks
 0. Exit
 
 ------------------------         
@@ -272,7 +334,7 @@ def main() -> None:
     
     if choice == '1':
       view_tasks(tasks)
-      input('Press enter to continue...')
+      input(Fore.WHITE + 'Press enter to continue...')
       
     elif choice == '2':
       add_task(tasks)
@@ -285,6 +347,9 @@ def main() -> None:
     
     elif choice == '5':
       export_tasks(tasks)
+    
+    elif choice == '6':
+      import_tasks(input('Enter the path to import tasks from: '))
       
     elif choice == '0':
       print(Fore.GREEN + 'Thank you for using the ToDo app. Have a nice day!')
