@@ -12,6 +12,7 @@ required_packages = [
 ]
 
 def install_packages():
+  
   print('🔧 Installing required packages...')
   subprocess.check_call([sys.executable, '-m', 'pip', 'install', *required_packages])
   print('✅ All required packages installed.')
