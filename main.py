@@ -6,9 +6,16 @@ import csv
 import os
 import re
 
-with open('ToDo_tasks.json', 'r') as f:
-    todo_list = json.load(f)
-    
+try:
+  with open('ToDos.json', 'r') as f:
+    try:
+      todo_list = json.load(f)
+    except json.JSONDecodeError:
+      todo_list = []
+except FileNotFoundError:
+  with open('ToDos.json', 'w') as f:
+    json.dump([], f)
+
 #-------------------------------------------------------------------------------
 
 def clear_screen():
@@ -35,7 +42,7 @@ except ImportError:
 #------------------------------------------------------------------------------
 
 re_pattern = r'^\d{2}\.\d{2}\.\d{4}$'
-task_file = './ToDo-tasks.json'
+task_file = './tasks.json'
 
 #------------------------------------------------------------------------------
 
@@ -109,7 +116,7 @@ def save_tasks(tasks) -> None:
   with open(task_file, 'w') as file:
     json.dump(tasks, file, indent=4)
   
-    notification.notify(
+  notification.notify(
         title ='Tasks saved!',
         message ='Your tasks have been saved successfully.',
         app_name ='ToDo App',
@@ -350,6 +357,7 @@ def main() -> None:
     
     elif choice == '6':
       import_tasks(input('Enter the path to import tasks from: '))
+      tasks = load_tasks()
       
     elif choice == '0':
       print(Fore.GREEN + 'Thank you for using the ToDo app. Have a nice day!')

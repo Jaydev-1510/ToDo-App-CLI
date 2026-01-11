@@ -19,7 +19,7 @@ def install_packages():
 
 def create_task_file():
   
-  filename = 'ToDo_tasks.json'
+  filename = 'ToDos.json'
   
   if not os.path.exists(filename):
     print(f'📄 Creating {filename}...')
@@ -30,10 +30,9 @@ def create_task_file():
     print(f'✅ {filename} created successfully.')
   
   else:
-    print(f'ℹ️  {filename} already exists. Skipping creation.')
+    print(f'ℹ️ {filename} already exists. Skipping creation.')
 
 def main():
-  
     install_packages()
     create_task_file()
     print('\n🚀 Setup complete! You can now run your To-Do App.\n')
