@@ -33,8 +33,8 @@ Tasks are stored locally in `ToDos.json`.
 
 ## 📸 Preview
 
-![Loading](./media/preview.png)
-![Tasks](./media/preview-1.png)
+![Loading](./media/Preview.png)
+![Tasks](./media/Preview-1.png)
 
 ## 💡 Contribute
 
